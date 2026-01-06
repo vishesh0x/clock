@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Backspace
+import androidx.compose.material.icons.automirrored.rounded.Backspace
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +24,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 @Composable
 fun TimerNumpad(
@@ -74,7 +73,11 @@ fun TimerNumpad(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Rounded.Backspace, null, tint = MaterialTheme.colorScheme.outline)
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.Backspace,
+                    contentDescription = "Backspace",
+                    tint = MaterialTheme.colorScheme.outline
+                )
             }
 
             TextKey(text = "0") {

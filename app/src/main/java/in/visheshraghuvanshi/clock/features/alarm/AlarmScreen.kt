@@ -4,18 +4,11 @@ import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -30,9 +23,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import `in`.visheshraghuvanshi.clock.core.data.ClockDatabase
 import `in`.visheshraghuvanshi.clock.features.alarm.components.AddAlarmSheet
@@ -136,8 +127,10 @@ fun AlarmScreen(navController: NavController) {
                     items = alarms,
                     key = { it.id }
                 ) { alarm ->
-                    Box(modifier = Modifier.animateItemPlacement(
-                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                    Box(modifier = Modifier.animateItem(
+                        fadeInSpec = null,
+                        fadeOutSpec = null,
+                        placementSpec = spring(stiffness = Spring.StiffnessMediumLow)
                     )) {
                         AlarmCard(
                             time = alarm.time,
@@ -215,17 +208,15 @@ private fun calculateNextAlarmText(alarms: List<AlarmEntity>): String? {
     val now = LocalTime.now()
     val today = java.time.LocalDate.now()
 
-    val nextAlarm = activeAlarms
-        .map { alarm ->
-            val alarmTime = LocalTime.parse(alarm.time, DateTimeFormatter.ofPattern("HH:mm"))
-            val alarmDateTime = if (alarmTime.isAfter(now)) {
-                LocalDateTime.of(today, alarmTime)
-            } else {
-                LocalDateTime.of(today.plusDays(1), alarmTime)
-            }
-            alarmDateTime
+    val nextAlarm = activeAlarms.minOfOrNull { alarm ->
+        val alarmTime = LocalTime.parse(alarm.time, DateTimeFormatter.ofPattern("HH:mm"))
+        val alarmDateTime = if (alarmTime.isAfter(now)) {
+            LocalDateTime.of(today, alarmTime)
+        } else {
+            LocalDateTime.of(today.plusDays(1), alarmTime)
         }
-        .minOrNull() ?: return null
+        alarmDateTime
+    } ?: return null
 
     val duration = Duration.between(LocalDateTime.now(), nextAlarm)
     val hours = duration.toHours()

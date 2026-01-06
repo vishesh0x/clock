@@ -10,8 +10,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Label
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Label
 import androidx.compose.material.icons.rounded.Snooze
 import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.material3.AlertDialog
@@ -148,7 +148,7 @@ fun EditAlarmScreen(
                 SettingsItem(
                     label = "Label",
                     value = label.ifBlank { "Alarm" },
-                    icon = Icons.Rounded.Label,
+                    icon = Icons.AutoMirrored.Rounded.Label,
                     iconColor = MaterialTheme.colorScheme.primary,
                     onClick = { showLabelDialog = true }
                 )

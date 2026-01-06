@@ -25,6 +25,7 @@ import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import androidx.core.content.edit
 
 @Composable
 fun ClockScreen() {
@@ -43,7 +44,7 @@ fun ClockScreen() {
     }
 
     fun saveCities() {
-        prefs.edit().putStringSet("cities", worldClocks.toSet()).apply()
+        prefs.edit { putStringSet("cities", worldClocks.toSet()) }
     }
 
     var currentTime by remember { mutableStateOf(LocalDateTime.now()) }

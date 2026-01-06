@@ -1,7 +1,6 @@
 package `in`.visheshraghuvanshi.clock.features.alarm.ui
 
 import android.app.KeyguardManager
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -26,19 +25,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,7 +61,7 @@ class AlarmTriggerActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
-            val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+            val keyguardManager = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
             keyguardManager.requestDismissKeyguard(this, null)
         } else {
             @Suppress("DEPRECATION")
@@ -258,91 +253,92 @@ fun SwipeToDismissSlider(onDismiss: () -> Unit) {
     val knobSize = 72.dp
     val padding = 4.dp
 
-    var trackWidthPx by remember { mutableFloatStateOf(0f) }
-    val knobSizePx = with(density) { knobSize.toPx() }
-    val paddingPx = with(density) { padding.toPx() }
-
-    val swipeOffset = remember { Animatable(0f) }
-    val maxSwipeDistance = trackWidthPx - knobSizePx - (paddingPx * 2)
-
-    val isDragging = swipeOffset.value > 10f
-    val progress = (swipeOffset.value / maxSwipeDistance).coerceIn(0f, 1f)
-
-    val trackColor by animateColorAsState(
-        targetValue = if (progress > 0.9f) Color(0xFFF43F5E) else Color.White.copy(alpha = 0.15f),
-        label = "trackColor"
-    )
-
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .height(trackHeight)
             .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(100))
-            .background(trackColor)
-            .padding(padding)
-            .onSizeChanged { trackWidthPx = it.width.toFloat() },
-        contentAlignment = Alignment.CenterStart
     ) {
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Slide to Stop",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.sp,
-                    color = Color.White.copy(alpha = (1f - progress * 1.5f).coerceAtLeast(0f))
-                )
-            )
-        }
+        val trackWidthPx = constraints.maxWidth.toFloat()
+        val knobSizePx = with(density) { knobSize.toPx() }
+        val paddingPx = with(density) { padding.toPx() }
+
+        val swipeOffset = remember { Animatable(0f) }
+        val maxSwipeDistance = trackWidthPx - knobSizePx - (paddingPx * 2)
+        val progress = (swipeOffset.value / maxSwipeDistance).coerceIn(0f, 1f)
+
+        val trackColor by animateColorAsState(
+            targetValue = if (progress > 0.9f) Color(0xFFF43F5E) else Color.White.copy(alpha = 0.15f),
+            label = "trackColor"
+        )
 
         Box(
             modifier = Modifier
-                .offset { IntOffset(swipeOffset.value.roundToInt(), 0) }
-                .size(knobSize)
-                .clip(CircleShape)
-                .background(Color.White)
-                .draggable(
-                    orientation = Orientation.Horizontal,
-                    state = rememberDraggableState { delta ->
-                        scope.launch {
-                            val newVal = (swipeOffset.value + delta).coerceIn(0f, maxSwipeDistance)
-                            swipeOffset.snapTo(newVal)
-                        }
-                    },
-                    onDragStopped = {
-                        if (swipeOffset.value > maxSwipeDistance * 0.8f) {
+                .fillMaxSize()
+                .clip(RoundedCornerShape(100))
+                .background(trackColor)
+                .padding(padding),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Slide to Stop",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 1.sp,
+                        color = Color.White.copy(alpha = (1f - progress * 1.5f).coerceAtLeast(0f))
+                    )
+                )
+            }
 
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onDismiss()
-                            scope.launch { swipeOffset.animateTo(maxSwipeDistance) }
-                        } else {
+            Box(
+                modifier = Modifier
+                    .offset { IntOffset(swipeOffset.value.roundToInt(), 0) }
+                    .size(knobSize)
+                    .clip(CircleShape)
+                    .background(Color.White)
+                    .draggable(
+                        orientation = Orientation.Horizontal,
+                        state = rememberDraggableState { delta ->
                             scope.launch {
-                                swipeOffset.animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessLow
+                                val newVal = (swipeOffset.value + delta).coerceIn(0f, maxSwipeDistance)
+                                swipeOffset.snapTo(newVal)
+                            }
+                        },
+                        onDragStopped = {
+                            if (swipeOffset.value > maxSwipeDistance * 0.8f) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onDismiss()
+                                scope.launch { swipeOffset.animateTo(maxSwipeDistance) }
+                            } else {
+                                scope.launch {
+                                    swipeOffset.animateTo(
+                                        targetValue = 0f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessLow
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
-                    }
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.ChevronRight,
-                contentDescription = "Slide",
-                tint = Color.Black,
-                modifier = Modifier
-                    .size(32.dp)
-                    .graphicsLayer {
-                        rotationZ = progress * 90f
-                    }
-            )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.ChevronRight,
+                    contentDescription = "Slide",
+                    tint = Color.Black,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .graphicsLayer {
+                            rotationZ = progress * 90f
+                        }
+                )
+            }
         }
     }
 }

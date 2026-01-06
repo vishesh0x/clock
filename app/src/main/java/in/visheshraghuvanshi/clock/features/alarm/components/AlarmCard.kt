@@ -6,14 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Label
+import androidx.compose.material.icons.automirrored.rounded.Label
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,7 +38,7 @@ fun AlarmCard(
             val formatter = DateTimeFormatter.ofPattern("h:mm")
             val amPmFormatter = DateTimeFormatter.ofPattern("a")
             Pair(localTime.format(formatter), localTime.format(amPmFormatter))
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Pair(time, "")
         }
     }
@@ -73,7 +73,7 @@ fun AlarmCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = if (label.isEmpty()) "Alarm" else label,
+                        text = label.ifEmpty { "Alarm" },
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
@@ -149,7 +149,7 @@ fun TagBadge(tag: String, isActive: Boolean, contentColor: Color) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                imageVector = Icons.Rounded.Label,
+                imageVector = Icons.AutoMirrored.Rounded.Label,
                 contentDescription = null,
                 modifier = Modifier.size(12.dp),
                 tint = contentColor.copy(alpha = 0.5f)
@@ -163,7 +163,3 @@ fun TagBadge(tag: String, isActive: Boolean, contentColor: Color) {
         }
     }
 }
-
-fun Modifier.scale(scale: Float) = this.then(
-    Modifier.graphicsLayer(scaleX = scale, scaleY = scale)
-)

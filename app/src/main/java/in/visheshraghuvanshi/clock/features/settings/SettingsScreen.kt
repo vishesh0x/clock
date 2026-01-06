@@ -2,7 +2,6 @@ package `in`.visheshraghuvanshi.clock.features.settings
 
 import android.content.Intent
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -24,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.core.net.toUri
 import `in`.visheshraghuvanshi.clock.ui.theme.AppColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,7 +148,7 @@ fun SettingsScreen(
                 SettingsGroup(title = "About") {
                     SettingsItem(
                         label = "Version",
-                        value = "1.0.0",
+                        value = "0.1.0",
                         icon = Icons.Rounded.Info,
                         iconTint = Color(0xFF4CAF50)
                     )
@@ -159,7 +159,7 @@ fun SettingsScreen(
                         icon = Icons.Rounded.Language,
                         iconTint = Color(0xFF2196F3),
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://visheshraghuvanshi.in"))
+                            val intent = Intent(Intent.ACTION_VIEW, "https://visheshraghuvanshi.in".toUri())
                             context.startActivity(intent)
                         }
                     )
@@ -170,7 +170,7 @@ fun SettingsScreen(
                         icon = Icons.Rounded.Code,
                         iconTint = Color(0xFF607D8B),
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/vishesh0x/clock"))
+                            val intent = Intent(Intent.ACTION_VIEW, "https://github.com/vishesh0x/clock".toUri())
                             context.startActivity(intent)
                         }
                     )
@@ -394,7 +394,3 @@ fun formatThemeName(mode: String): String = when (mode) {
     "dark" -> "Dark"
     else -> "System Default"
 }
-
-fun Modifier.scale(scale: Float) = this.then(
-    Modifier.graphicsLayer(scaleX = scale, scaleY = scale)
-)

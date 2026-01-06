@@ -6,12 +6,12 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.IBinder
+import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
@@ -52,13 +52,20 @@ class AlarmService : Service() {
 
         if (shouldVibrate) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+                val vibratorManager = getSystemService(VIBRATOR_MANAGER_SERVICE) as VibratorManager
                 vibrator = vibratorManager.defaultVibrator
             } else {
                 @Suppress("DEPRECATION")
-                vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
             }
-            vibrator?.vibrate(longArrayOf(0, 1000, 1000), 0)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val effect = VibrationEffect.createWaveform(longArrayOf(0, 1000, 1000), 0)
+                vibrator?.vibrate(effect)
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(longArrayOf(0, 1000, 1000), 0)
+            }
         }
 
         startForeground(1, createNotification(label, canSnooze))

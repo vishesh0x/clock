@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -87,7 +86,6 @@ fun ClockApp(
         if (!view.isInEditMode) {
             SideEffect {
                 val window = (view.context as Activity).window
-                window.statusBarColor = Color.Transparent.toArgb()
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isDarkTheme
             }
         }
@@ -248,22 +246,43 @@ fun getSlideOffset(initial: NavBackStackEntry, target: NavBackStackEntry, items:
 
 @Composable
 fun LiquidNavBar(items: List<Screen>, currentRoute: String?, isDarkTheme: Boolean, onItemClick: (Screen) -> Unit) {
-    val density = LocalDensity.current
     val activeIndex = items.indexOfFirst { it.route == currentRoute }.takeIf { it != -1 } ?: 0
-    var containerWidth by remember { mutableFloatStateOf(0f) }
-    val tabWidth = if (containerWidth > 0) containerWidth / items.size else 0f
-    val indicatorOffset by animateFloatAsState(targetValue = activeIndex * tabWidth, animationSpec = spring(dampingRatio = 0.7f, stiffness = 300f))
 
-    NavContainer(isDarkTheme = isDarkTheme, width = 0.92f, height = 72.dp) {
-        Box(modifier = Modifier.onSizeChanged { containerWidth = it.width.toFloat() }.fillMaxSize()) {
-            if (tabWidth > 0) {
-                Box(modifier = Modifier.width(with(density) { tabWidth.toDp() }).fillMaxHeight().offset { IntOffset(indicatorOffset.roundToInt(), 0) }.padding(12.dp)) {
+    NavContainer(
+        isDarkTheme = isDarkTheme,
+        modifier = Modifier.fillMaxWidth(0.92f).height(72.dp)
+    ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val containerWidthPx = constraints.maxWidth.toFloat()
+            val tabWidthPx = if (items.isNotEmpty()) containerWidthPx / items.size else 0f
+
+            val density = LocalDensity.current
+            val tabWidthDp = with(density) { tabWidthPx.toDp() }
+
+            val indicatorOffset by animateFloatAsState(
+                targetValue = activeIndex * tabWidthPx,
+                animationSpec = spring(dampingRatio = 0.7f, stiffness = 300f)
+            )
+
+            if (tabWidthPx > 0) {
+                Box(
+                    modifier = Modifier
+                        .width(tabWidthDp)
+                        .fillMaxHeight()
+                        .offset { IntOffset(indicatorOffset.roundToInt(), 0) }
+                        .padding(12.dp)
+                ) {
                     BlobIndicator()
                 }
             }
             Row(Modifier.fillMaxSize()) {
                 items.forEachIndexed { index, screen ->
-                    NavIconItem(screen, index == activeIndex, isDarkTheme, Modifier.weight(1f).fillMaxHeight()) { onItemClick(screen) }
+                    NavIconItem(
+                        screen = screen,
+                        isSelected = index == activeIndex,
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        onClick = { onItemClick(screen) }
+                    )
                 }
             }
         }
@@ -272,22 +291,43 @@ fun LiquidNavBar(items: List<Screen>, currentRoute: String?, isDarkTheme: Boolea
 
 @Composable
 fun LiquidNavRail(items: List<Screen>, currentRoute: String?, isDarkTheme: Boolean, onItemClick: (Screen) -> Unit) {
-    val density = LocalDensity.current
     val activeIndex = items.indexOfFirst { it.route == currentRoute }.takeIf { it != -1 } ?: 0
-    var containerHeight by remember { mutableFloatStateOf(0f) }
-    val tabHeight = if (containerHeight > 0) containerHeight / items.size else 0f
-    val indicatorOffset by animateFloatAsState(targetValue = activeIndex * tabHeight, animationSpec = spring(dampingRatio = 0.7f, stiffness = 300f))
 
-    NavContainer(isDarkTheme = isDarkTheme, width = 72.dp, height = 320.dp) {
-        Box(modifier = Modifier.onSizeChanged { containerHeight = it.height.toFloat() }.fillMaxSize()) {
-            if (tabHeight > 0) {
-                Box(modifier = Modifier.fillMaxWidth().height(with(density) { tabHeight.toDp() }).offset { IntOffset(0, indicatorOffset.roundToInt()) }.padding(12.dp)) {
+    NavContainer(
+        isDarkTheme = isDarkTheme,
+        modifier = Modifier.width(72.dp).height(320.dp)
+    ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val containerHeightPx = constraints.maxHeight.toFloat()
+            val tabHeightPx = if (items.isNotEmpty()) containerHeightPx / items.size else 0f
+
+            val density = LocalDensity.current
+            val tabHeightDp = with(density) { tabHeightPx.toDp() }
+
+            val indicatorOffset by animateFloatAsState(
+                targetValue = activeIndex * tabHeightPx,
+                animationSpec = spring(dampingRatio = 0.7f, stiffness = 300f)
+            )
+
+            if (tabHeightPx > 0) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(tabHeightDp)
+                        .offset { IntOffset(0, indicatorOffset.roundToInt()) }
+                        .padding(12.dp)
+                ) {
                     BlobIndicator()
                 }
             }
             Column(Modifier.fillMaxSize()) {
                 items.forEachIndexed { index, screen ->
-                    NavIconItem(screen, index == activeIndex, isDarkTheme, Modifier.fillMaxWidth().weight(1f)) { onItemClick(screen) }
+                    NavIconItem(
+                        screen = screen,
+                        isSelected = index == activeIndex,
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        onClick = { onItemClick(screen) }
+                    )
                 }
             }
         }
@@ -295,31 +335,60 @@ fun LiquidNavRail(items: List<Screen>, currentRoute: String?, isDarkTheme: Boole
 }
 
 @Composable
-fun NavContainer(isDarkTheme: Boolean, width: Any, height: Any, content: @Composable () -> Unit) {
+inline fun NavContainer(
+    isDarkTheme: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit
+) {
     val glassColor = if (isDarkTheme) Color(0xFF1E1E1E).copy(alpha = 0.9f) else Color(0xFFFFFFFF).copy(alpha = 0.9f)
     val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.1f) else Color.Black.copy(alpha = 0.05f)
     val shadowColor = if (isDarkTheme) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.1f)
-    var modifier = Modifier.shadow(24.dp, RoundedCornerShape(50), spotColor = shadowColor).clip(RoundedCornerShape(50)).background(glassColor).border(1.dp, borderColor, RoundedCornerShape(50))
-    modifier = if (width is Float) modifier.fillMaxWidth(width) else modifier.width(width as androidx.compose.ui.unit.Dp)
-    modifier = if (height is androidx.compose.ui.unit.Dp) modifier.height(height) else modifier
-    Box(modifier = modifier) { content() }
+
+    Box(
+        modifier = modifier
+            .shadow(24.dp, RoundedCornerShape(50), spotColor = shadowColor)
+            .clip(RoundedCornerShape(50))
+            .background(glassColor)
+            .border(1.dp, borderColor, RoundedCornerShape(50)),
+        content = content
+    )
 }
 
 @Composable
 fun BlobIndicator() {
     val gradientColors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary)
-    Box(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(40)).background(Brush.linearGradient(colors = gradientColors)).graphicsLayer { alpha = 0.9f })
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .clip(RoundedCornerShape(40))
+        .background(Brush.linearGradient(colors = gradientColors))
+        .graphicsLayer { alpha = 0.9f }
+    )
 }
 
 @Composable
-fun NavIconItem(screen: Screen, isSelected: Boolean, isDarkTheme: Boolean, modifier: Modifier, onClick: () -> Unit) {
+fun NavIconItem(screen: Screen, isSelected: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val haptic = LocalHapticFeedback.current
     val activeIconTint = MaterialTheme.colorScheme.onPrimary
     val inactiveIconTint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
     val scale by animateFloatAsState(if (isSelected) 1.1f else 1.0f, spring(dampingRatio = 0.5f))
-    Box(modifier = modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onClick() }, contentAlignment = Alignment.Center) {
+
+    Box(
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null
+        ) {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onClick()
+        },
+        contentAlignment = Alignment.Center
+    ) {
         Crossfade(targetState = isSelected) { selected ->
-            Icon(if (selected) screen.activeIcon else screen.inactiveIcon, screen.label, tint = if (selected) activeIconTint else inactiveIconTint, modifier = Modifier.size(26.dp).scale(scale))
+            Icon(
+                imageVector = if (selected) screen.activeIcon else screen.inactiveIcon,
+                contentDescription = screen.label,
+                tint = if (selected) activeIconTint else inactiveIconTint,
+                modifier = Modifier.size(26.dp).scale(scale)
+            )
         }
     }
 }
