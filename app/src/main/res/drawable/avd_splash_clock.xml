@@ -1,0 +1,45 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="288dp"
+            android:height="288dp"
+            android:viewportWidth="512"
+            android:viewportHeight="512">
+            
+            <group>
+                <path
+                    android:pathData="M256,256m-220,0a220,220 0,1 1,440 0a220,220 0,1 1,-440 0"
+                    android:strokeColor="#FFFFFF" android:strokeWidth="16"/>
+                <path
+                    android:pathData="M256,56L256,96 M456,256L416,256 M256,456L256,416 M56,256L96,256"
+                    android:strokeColor="#FFFFFF" android:strokeWidth="20" android:strokeLineCap="round"/>
+                <path
+                    android:pathData="M356,83L336,117 M429,156L395,176 M429,356L395,336 M356,429L336,395 M156,429L176,395 M83,356L117,336 M83,156L117,176 M156,83L176,117"
+                    android:strokeColor="#FFFFFF" android:strokeWidth="16" android:strokeLineCap="round"/>
+            </group>
+
+            <group
+                android:name="hands"
+                android:pivotX="256"
+                android:pivotY="256">
+                
+                <path android:pathData="M256,256m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" android:fillColor="#FFFFFF"/>
+                <path android:pathData="M256,256L256,120" android:strokeColor="#FFFFFF" android:strokeWidth="24" android:strokeLineCap="round"/>
+                <path android:pathData="M256,256L380,256" android:strokeColor="#FFFFFF" android:strokeWidth="20" android:strokeLineCap="round"/>
+            </group>
+        </vector>
+    </aapt:attr>
+
+    <target android:name="hands">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="rotation"
+                android:valueFrom="0"
+                android:valueTo="360"
+                android:duration="800"
+                android:interpolator="@android:interpolator/fast_out_slow_in"/>
+        </aapt:attr>
+    </target>
+</animated-vector>
