@@ -155,7 +155,7 @@ fun SettingsScreen(
                 SettingsGroup(title = "About") {
                     SettingsItem(
                         label = "Version",
-                        value = "0.1.0",
+                        value = "0.2.0",
                         icon = Icons.Rounded.Info,
                         iconColor = Color(0xFF4CAF50)
                     )
