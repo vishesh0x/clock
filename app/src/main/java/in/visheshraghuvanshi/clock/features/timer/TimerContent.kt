@@ -159,7 +159,7 @@ fun TimerContent(
 @Composable
 fun TimerInputText(inputString: String) {
     Text(
-        text = formatInputPremium(inputString),
+        text = formatTimerInput(inputString),
         style = MaterialTheme.typography.displayLarge.copy(
             fontSize = 60.sp,
             fontWeight = FontWeight.ExtraLight,
@@ -247,7 +247,7 @@ fun ControlButtonsContent(
     }
 }
 
-fun formatInputPremium(input: String): String {
+fun formatTimerInput(input: String): String {
     if (input.isEmpty()) return "00h 00m 00s"
     val padded = input.padStart(6, '0')
     val h = padded.take(2)

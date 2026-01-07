@@ -246,7 +246,7 @@ fun getSlideOffset(initial: NavBackStackEntry, target: NavBackStackEntry, items:
 
 @Composable
 fun LiquidNavBar(items: List<Screen>, currentRoute: String?, isDarkTheme: Boolean, onItemClick: (Screen) -> Unit) {
-    val activeIndex = items.indexOfFirst { it.route == currentRoute }.takeIf { it != -1 } ?: 0
+    val activeIndex = items.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
 
     NavContainer(
         isDarkTheme = isDarkTheme,
@@ -291,7 +291,7 @@ fun LiquidNavBar(items: List<Screen>, currentRoute: String?, isDarkTheme: Boolea
 
 @Composable
 fun LiquidNavRail(items: List<Screen>, currentRoute: String?, isDarkTheme: Boolean, onItemClick: (Screen) -> Unit) {
-    val activeIndex = items.indexOfFirst { it.route == currentRoute }.takeIf { it != -1 } ?: 0
+    val activeIndex = items.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
 
     NavContainer(
         isDarkTheme = isDarkTheme,

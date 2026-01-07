@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun StopwatchContent(
     viewModel: StopwatchViewModel = viewModel()

@@ -46,7 +46,7 @@ class StopwatchService : Service() {
             while (isActive) {
                 val now = System.currentTimeMillis()
                 val elapsed = (now - startTime) + accumulated
-                updateNotification(formatStopwatch(elapsed))
+                updateNotification(`in`.visheshraghuvanshi.clock.features.timer.formatStopwatch(elapsed))
                 delay(1000)
             }
         }
@@ -54,7 +54,7 @@ class StopwatchService : Service() {
 
     private fun showPausedNotification(elapsed: Long) {
         createChannel()
-        val notif = buildNotification("Paused: ${formatStopwatch(elapsed)}")
+        val notif = buildNotification("Paused: ${`in`.visheshraghuvanshi.clock.features.timer.formatStopwatch(elapsed)}")
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(NOTIF_ID, notif)
     }
@@ -126,11 +126,7 @@ class StopwatchService : Service() {
         super.onDestroy()
     }
 
-    private fun formatStopwatch(millis: Long): String {
-        val minutes = (millis / 1000) / 60
-        val seconds = (millis / 1000) % 60
-        return String.format(Locale.US, "%02d:%02d", minutes, seconds)
-    }
+
 
     companion object {
         const val CHANNEL_ID = "stopwatch_channel_v2"

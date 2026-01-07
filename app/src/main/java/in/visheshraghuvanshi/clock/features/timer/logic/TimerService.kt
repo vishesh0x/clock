@@ -1,6 +1,6 @@
 package `in`.visheshraghuvanshi.clock.features.timer.logic
 
-import android.annotation.SuppressLint
+
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -66,7 +66,6 @@ class TimerService : Service() {
         }
     }
 
-    @SuppressLint("ForegroundServiceType")
     private fun triggerAlarm() {
         val fullScreenIntent = Intent(this, AlarmTriggerActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
