@@ -74,7 +74,10 @@ class AlarmTriggerActivity : ComponentActivity() {
             )
         }
 
-        val label = intent.getStringExtra("ALARM_LABEL") ?: "Alarm"
+// Validate and sanitize intent extras
+        val label = intent.getStringExtra("ALARM_LABEL")?.takeIf { it.length <= 50 }?.let { 
+            it.replace(Regex("[\n\r\t]"), " ").trim()
+        } ?: "Alarm"
         val canSnooze = intent.getBooleanExtra("ALARM_SNOOZE", true)
 
         setContent {
