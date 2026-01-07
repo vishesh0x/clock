@@ -2,6 +2,7 @@ package `in`.visheshraghuvanshi.clock.features.settings
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -23,9 +24,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -33,7 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
+import `in`.visheshraghuvanshi.clock.features.settings.components.SettingsGroup
+import `in`.visheshraghuvanshi.clock.features.settings.components.SettingsItem
 import `in`.visheshraghuvanshi.clock.ui.theme.AppColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,11 +52,10 @@ fun SettingsScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scrollState = rememberScrollState()
     var showThemeDialog by remember { mutableStateOf(false) }
+
     val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val isTablet = configuration.screenWidthDp >= 600
-    val isWideScreen = isLandscape || isTablet
-    val bottomContentPadding = if (isWideScreen) 32.dp else 120.dp
+    val isWideScreen = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE || configuration.screenWidthDp >= 600
+    val bottomContentPadding = if (isWideScreen) 32.dp else 100.dp
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -75,7 +74,7 @@ fun SettingsScreen(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.largeTopAppBarColors(
                     containerColor = Color.Transparent,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
                 )
             )
         }
@@ -91,42 +90,37 @@ fun SettingsScreen(
                     .fillMaxHeight()
                     .widthIn(max = 600.dp)
                     .verticalScroll(scrollState)
-                    .padding(horizontal = 16.dp)
                     .padding(bottom = bottomContentPadding),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
-
                 SettingsGroup(title = "Appearance") {
                     SettingsItem(
                         label = "App Theme",
                         value = formatThemeName(currentThemeMode),
                         icon = Icons.Rounded.DarkMode,
-                        iconTint = MaterialTheme.colorScheme.primary,
+                        iconColor = MaterialTheme.colorScheme.primary,
                         onClick = { showThemeDialog = true }
                     )
-
-                    SettingsDivider()
 
                     SettingsItem(
                         label = "AMOLED Black",
                         value = "Pure black background",
                         icon = Icons.Rounded.Contrast,
-                        iconTint = MaterialTheme.colorScheme.onSurface,
+                        iconColor = MaterialTheme.colorScheme.onSurface,
                         isSwitch = true,
                         isChecked = useAmoled,
                         onCheckedChange = onAmoledChanged
                     )
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        SettingsDivider()
                         SettingsItem(
                             label = "Use Wallpaper Colors",
                             icon = Icons.Rounded.Palette,
-                            iconTint = if (useDynamicColors) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.outline,
+                            iconColor = if (useDynamicColors) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.outline,
                             isSwitch = true,
                             isChecked = useDynamicColors,
-                            onCheckedChange = onDynamicColorChanged
+                            onCheckedChange = onDynamicColorChanged,
+                            showDivider = !useDynamicColors
                         )
                     }
 
@@ -136,7 +130,6 @@ fun SettingsScreen(
                         exit = shrinkVertically() + fadeOut()
                     ) {
                         Column {
-                            SettingsDivider()
                             ColorPickerRow(
                                 selectedColor = currentCustomColor,
                                 onColorSelected = onCustomColorChanged
@@ -145,32 +138,47 @@ fun SettingsScreen(
                     }
                 }
 
+                SettingsGroup(title = "Support") {
+                    SettingsItem(
+                        label = "Buy me a coffee",
+                        value = "Support development",
+                        icon = Icons.Rounded.LocalCafe,
+                        iconColor = Color(0xFFFFC107),
+                        showDivider = false,
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.buymeacoffee.com/visheshraghuvanshi"))
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+
                 SettingsGroup(title = "About") {
                     SettingsItem(
                         label = "Version",
                         value = "0.1.0",
                         icon = Icons.Rounded.Info,
-                        iconTint = Color(0xFF4CAF50)
+                        iconColor = Color(0xFF4CAF50)
                     )
-                    SettingsDivider()
+
                     SettingsItem(
                         label = "Website",
-                        value = "visheshraghuvanshi.in",
+                        value = "clock.visheshraghuvanshi.in",
                         icon = Icons.Rounded.Language,
-                        iconTint = Color(0xFF2196F3),
+                        iconColor = Color(0xFF2196F3),
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, "https://visheshraghuvanshi.in".toUri())
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://clock.visheshraghuvanshi.in"))
                             context.startActivity(intent)
                         }
                     )
-                    SettingsDivider()
+
                     SettingsItem(
                         label = "GitHub",
                         value = "vishesh0x/clock",
                         icon = Icons.Rounded.Code,
-                        iconTint = Color(0xFF607D8B),
+                        iconColor = Color(0xFF607D8B),
+                        showDivider = false,
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, "https://github.com/vishesh0x/clock".toUri())
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/vishesh0x/clock"))
                             context.startActivity(intent)
                         }
                     )
@@ -181,7 +189,7 @@ fun SettingsScreen(
                 Text(
                     text = "Made with ❤️ in India",
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
@@ -202,115 +210,13 @@ fun SettingsScreen(
 }
 
 @Composable
-fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
-    Column {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge.copy(
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            ),
-            modifier = Modifier.padding(start = 12.dp, bottom = 8.dp)
-        )
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(content = content)
-        }
-    }
-}
-
-@Composable
-fun SettingsItem(
-    label: String,
-    value: String? = null,
-    icon: ImageVector,
-    iconTint: Color,
-    isSwitch: Boolean = false,
-    isChecked: Boolean = false,
-    onCheckedChange: ((Boolean) -> Unit)? = null,
-    onClick: (() -> Unit)? = null
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = onClick != null || isSwitch) {
-                if (isSwitch) onCheckedChange?.invoke(!isChecked) else onClick?.invoke()
-            }
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(iconTint.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            if (value != null) {
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        if (isSwitch) {
-            Switch(
-                checked = isChecked,
-                onCheckedChange = onCheckedChange,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                    uncheckedTrackColor = Color.Transparent
-                ),
-                modifier = Modifier.scale(0.8f)
-            )
-        } else if (onClick != null) {
-            Icon(
-                imageVector = Icons.Rounded.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-            )
-        }
-    }
-}
-
-@Composable
-fun SettingsDivider() {
-    HorizontalDivider(
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
-        modifier = Modifier.padding(start = 72.dp)
-    )
-}
-
-@Composable
 fun ColorPickerRow(selectedColor: Color, onColorSelected: (Color) -> Unit) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text(
             "Accent Color",
-            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(bottom = 12.dp, start = 8.dp)
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
         )
         Row(
             modifier = Modifier.fillMaxWidth(),

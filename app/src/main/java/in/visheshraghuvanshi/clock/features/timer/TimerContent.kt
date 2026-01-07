@@ -30,58 +30,32 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import `in`.visheshraghuvanshi.clock.features.timer.components.TimerCircularDisplay
 import `in`.visheshraghuvanshi.clock.features.timer.components.TimerNumpad
-import kotlinx.coroutines.delay
 
 @Composable
-fun TimerContent() {
-    var isRunning by rememberSaveable { mutableStateOf(false) }
-    var isPaused by rememberSaveable { mutableStateOf(false) }
-    var totalTimeSeconds by rememberSaveable { mutableLongStateOf(0L) }
-    var remainingTimeSeconds by rememberSaveable { mutableLongStateOf(0L) }
-    var inputString by rememberSaveable { mutableStateOf("") }
-
-    LaunchedEffect(isRunning, isPaused, remainingTimeSeconds) {
-        if (isRunning && !isPaused && remainingTimeSeconds > 0) {
-            delay(1000L)
-            remainingTimeSeconds--
-        } else if (remainingTimeSeconds == 0L && isRunning) {
-            isRunning = false
-            inputString = ""
-        }
-    }
+fun TimerContent(
+    viewModel: TimerViewModel = viewModel()
+) {
+    val isRunning by viewModel.isRunning.collectAsState()
+    val isPaused by viewModel.isPaused.collectAsState()
+    val totalTimeSeconds by viewModel.totalTime.collectAsState()
+    val remainingTimeSeconds by viewModel.remainingTime.collectAsState()
+    val inputString by viewModel.inputString.collectAsState()
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val isLandscape = maxWidth > maxHeight
         val isMobilePortrait = !isLandscape && maxWidth < 600.dp
         val bottomPadding = if (isMobilePortrait && isRunning) 100.dp else 24.dp
-
-        val onStartTimer = {
-            val seconds = parseInputToSeconds(inputString)
-            if (seconds > 0) {
-                totalTimeSeconds = seconds
-                remainingTimeSeconds = seconds
-                isRunning = true
-                isPaused = false
-            }
-        }
-
-        val onStopTimer = {
-            isRunning = false
-        }
 
         AnimatedContent(
             targetState = isRunning,
@@ -102,9 +76,9 @@ fun TimerContent() {
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                                 TimerNumpad(
-                                    onNumberClick = { if (inputString.length < 6) inputString += it },
-                                    onBackspace = { if (inputString.isNotEmpty()) inputString = inputString.dropLast(1) },
-                                    onStart = onStartTimer
+                                    onNumberClick = viewModel::onNumberClick,
+                                    onBackspace = viewModel::onBackspace,
+                                    onStart = viewModel::startTimer
                                 )
                             }
                         }
@@ -117,9 +91,9 @@ fun TimerContent() {
                     ) {
                         TimerInputText(inputString)
                         TimerNumpad(
-                            onNumberClick = { if (inputString.length < 6) inputString += it },
-                            onBackspace = { if (inputString.isNotEmpty()) inputString = inputString.dropLast(1) },
-                            onStart = onStartTimer
+                            onNumberClick = viewModel::onNumberClick,
+                            onBackspace = viewModel::onBackspace,
+                            onStart = viewModel::startTimer
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                     }
@@ -144,9 +118,9 @@ fun TimerContent() {
                         ) {
                             TimerControls(
                                 isPaused = isPaused,
-                                onAddMinute = { remainingTimeSeconds += 60; totalTimeSeconds += 60 },
-                                onTogglePause = { isPaused = !isPaused },
-                                onStop = onStopTimer,
+                                onAddMinute = viewModel::addMinute,
+                                onTogglePause = viewModel::togglePause,
+                                onStop = viewModel::stopTimer,
                                 isVertical = true
                             )
                         }
@@ -169,9 +143,9 @@ fun TimerContent() {
                         ) {
                             TimerControls(
                                 isPaused = isPaused,
-                                onAddMinute = { remainingTimeSeconds += 60; totalTimeSeconds += 60 },
-                                onTogglePause = { isPaused = !isPaused },
-                                onStop = onStopTimer,
+                                onAddMinute = viewModel::addMinute,
+                                onTogglePause = viewModel::togglePause,
+                                onStop = viewModel::stopTimer,
                                 isVertical = false
                             )
                         }
@@ -280,15 +254,6 @@ fun formatInputPremium(input: String): String {
     val m = padded.substring(2, 4)
     val s = padded.substring(4, 6)
     return "${h}h ${m}m ${s}s"
-}
-
-fun parseInputToSeconds(input: String): Long {
-    if (input.isEmpty()) return 0
-    val padded = input.padStart(6, '0')
-    val h = padded.take(2).toLong()
-    val m = padded.substring(2, 4).toLong()
-    val s = padded.substring(4, 6).toLong()
-    return (h * 3600) + (m * 60) + s
 }
 
 fun formatSeconds(seconds: Long): String {

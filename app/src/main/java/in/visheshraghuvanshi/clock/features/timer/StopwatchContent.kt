@@ -32,34 +32,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.listSaver
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
-fun StopwatchContent() {
-    var isRunning by rememberSaveable { mutableStateOf(false) }
-    var timeMillis by rememberSaveable { mutableLongStateOf(0L) }
-
-    val laps = rememberSaveable(
-        saver = listSaver(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) { mutableStateListOf<Long>() }
+fun StopwatchContent(
+    viewModel: StopwatchViewModel = viewModel()
+) {
+    val isRunning by viewModel.isRunning.collectAsState()
+    val timeMillis by viewModel.elapsedMillis.collectAsState()
+    val laps by viewModel.laps.collectAsState()
 
     val listState = rememberLazyListState()
 
@@ -67,15 +57,6 @@ fun StopwatchContent() {
         targetValue = if (isRunning) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
         label = "color"
     )
-
-    LaunchedEffect(isRunning) {
-        val startTime = System.currentTimeMillis() - timeMillis
-        while (isRunning) {
-            timeMillis = System.currentTimeMillis() - startTime
-            delay(16L)
-        }
-    }
-
     LaunchedEffect(laps.size) {
         if (laps.isNotEmpty()) listState.animateScrollToItem(0)
     }
@@ -99,13 +80,8 @@ fun StopwatchContent() {
 
                 StopwatchControls(
                     isRunning = isRunning,
-                    onToggle = { isRunning = !isRunning },
-                    onLapOrReset = {
-                        if (isRunning) laps.add(0, timeMillis) else {
-                            timeMillis = 0L
-                            laps.clear()
-                        }
-                    }
+                    onToggle = viewModel::toggleStartPause,
+                    onLapOrReset = viewModel::lapOrReset
                 )
 
                 Spacer(modifier = Modifier.height(40.dp))
@@ -131,13 +107,8 @@ fun StopwatchContent() {
                     Spacer(modifier = Modifier.height(32.dp))
                     StopwatchControls(
                         isRunning = isRunning,
-                        onToggle = { isRunning = !isRunning },
-                        onLapOrReset = {
-                            if (isRunning) laps.add(0, timeMillis) else {
-                                timeMillis = 0L
-                                laps.clear()
-                            }
-                        }
+                        onToggle = viewModel::toggleStartPause,
+                        onLapOrReset = viewModel::lapOrReset
                     )
                 }
 
