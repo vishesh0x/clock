@@ -237,7 +237,7 @@ fun SnoozeButton(onClick: () -> Unit) {
         Icon(Icons.Rounded.Snooze, contentDescription = null, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(8.dp))
         Text(
-            "Snooze for 10 min",
+            "Snooze for 5 min",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
         )
     }
@@ -259,7 +259,7 @@ fun SwipeToDismissSlider(onDismiss: () -> Unit) {
             .height(trackHeight)
             .padding(horizontal = 16.dp)
     ) {
-        val trackWidthPx = constraints.maxWidth.toFloat()
+        val trackWidthPx = with(density) { maxWidth.toPx() }
         val knobSizePx = with(density) { knobSize.toPx() }
         val paddingPx = with(density) { padding.toPx() }
 

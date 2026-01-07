@@ -7,7 +7,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.media.Ringtone
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.IBinder
@@ -20,7 +21,7 @@ import `in`.visheshraghuvanshi.clock.features.alarm.ui.AlarmTriggerActivity
 
 class AlarmService : Service() {
 
-    private var ringtone: Ringtone? = null
+    private var mediaPlayer: MediaPlayer? = null
     private var vibrator: Vibrator? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -44,8 +45,18 @@ class AlarmService : Service() {
 
         try {
             val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ringtone = RingtoneManager.getRingtone(applicationContext, alarmUri)
-            ringtone?.play()
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(applicationContext, alarmUri)
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .build()
+                )
+                isLooping = true
+                prepare()
+                start()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -59,12 +70,12 @@ class AlarmService : Service() {
                 vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
             }
 
+            val pattern = longArrayOf(0, 1000, 1000)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val effect = VibrationEffect.createWaveform(longArrayOf(0, 1000, 1000), 0)
-                vibrator?.vibrate(effect)
+                vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 0))
             } else {
                 @Suppress("DEPRECATION")
-                vibrator?.vibrate(longArrayOf(0, 1000, 1000), 0)
+                vibrator?.vibrate(pattern, 0)
             }
         }
 
@@ -85,7 +96,7 @@ class AlarmService : Service() {
             this, id, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val triggerTime = System.currentTimeMillis() + 10 * 60 * 1000
+        val triggerTime = System.currentTimeMillis() + 5 * 60 * 1000
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
@@ -123,7 +134,7 @@ class AlarmService : Service() {
         val builder = NotificationCompat.Builder(this, channelId)
             .setContentTitle("Alarm")
             .setContentText(label)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(fullScreenPendingIntent, true)
@@ -139,7 +150,8 @@ class AlarmService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        ringtone?.stop()
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
         vibrator?.cancel()
     }
 

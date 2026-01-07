@@ -57,7 +57,8 @@ fun AlarmScreen(navController: NavController) {
     val alarms by alarmDao.getAllAlarms().collectAsState(initial = emptyList())
     val alarmScheduler = remember { AlarmScheduler(context) }
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
